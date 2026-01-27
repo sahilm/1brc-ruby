@@ -2,8 +2,7 @@
 RubyVM::YJIT.enable
 
 require "bigdecimal"
-require "stackprof"
-# require "memory_profiler"
+
 
 module V1
   Stats = Struct.new(:min, :max, :sum, :count) do
