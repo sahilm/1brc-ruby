@@ -1,2 +1,8 @@
 Style/StringLiterals:
   EnforcedStyle: double_quotes
+
+Style/BlockComments:
+  Enabled: false
+
+Style/Documentation:
+  Enabled: false

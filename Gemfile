@@ -4,5 +4,7 @@ source "https://rubygems.org"
 
 ruby "4.0.1"
 
+gem "csv"
 gem "rspec"
 gem "rubocop"
+gem "bigdecimal"
