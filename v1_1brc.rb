@@ -1,7 +1,9 @@
 # frozen_string_literal: true
+RubyVM::YJIT.enable
 
-require "csv"
 require "bigdecimal"
+require "stackprof"
+# require "memory_profiler"
 
 module V1
   Stats = Struct.new(:min, :max, :sum, :count) do
@@ -26,8 +28,11 @@ module V1
       stations = Hash.new { |h, k| h[k] = Stats.new }
       file = Pathname(__dir__).join("measurements.txt")
 
-      CSV.foreach(file, headers: false, col_sep: ";") do |row|
-        stations[row[0]].add_measurement(BigDecimal(row[1]))
+      File.open(file, "r:UTF-8") do |f|
+        f.each_line do |line|
+          name, value = line.split(";")
+          stations[name].add_measurement(BigDecimal(value))
+        end
       end
 
       "{#{
