@@ -29,6 +29,7 @@ module V1
 
       File.open(file, "r:UTF-8") do |f|
         f.each_line do |line|
+          # marginal speedup over splitting the string
           name = line.slice!(0, line.index(";"))
           stations[name].add_measurement(BigDecimal(line[1..]))
         end
