@@ -1,8 +1,8 @@
 # frozen_string_literal: true
+
 RubyVM::YJIT.enable
 
 require "bigdecimal"
-
 
 module V1
   Stats = Struct.new(:min, :max, :sum, :count) do
