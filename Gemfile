@@ -4,9 +4,8 @@ source "https://rubygems.org"
 
 ruby "4.0.1"
 
+gem "bigdecimal"
 gem "csv"
 gem "rspec"
 gem "rubocop"
-gem "bigdecimal"
 gem "stackprof"
-gem "memory_profiler"

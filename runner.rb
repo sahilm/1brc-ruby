@@ -2,6 +2,9 @@
 # frozen_string_literal: true
 
 require "bundler/setup"
+require "stackprof"
 require_relative "./v1_1brc"
 
-puts V1::OneBRC.compute
+StackProf.run(mode: :object, raw: true, out: "tmp/stackprof-objects.dump") do
+  puts V1::OneBRC.compute
+end
