@@ -55,13 +55,14 @@ module V2
             pos += f.gets.bytesize unless start_offset.zero?
 
             f.each_line do |line|
+              original_size = line.bytesize
               name = line.slice!(0, line.index(";"))
               value = to_number(line[1..])
 
               stations[name] ||= Stats.new(min: 999, max: -999, sum: 0, count: 0)
               stations[name].add_measurement(value)
 
-              pos += line.bytesize
+              pos += original_size
               break if pos > end_offset
             end
           end
