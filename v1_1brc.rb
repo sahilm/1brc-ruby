@@ -1,4 +1,7 @@
 # frozen_string_literal: true
+RubyVM::YJIT.enable
+
+
 module V1
   Stats = Struct.new(:min, :max, :sum, :count) do
     def initialize
