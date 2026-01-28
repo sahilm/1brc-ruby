@@ -21,8 +21,7 @@ module V2
     end
 
     def to_s
-      avg_rounded = (2 * sum + count) / (2 * count)
-      "#{min / 10.0}/#{avg_rounded / 10.0}/#{max / 10.0}"
+      "#{(min / 10.0)}/#{((sum / count.to_f) / 10).round(1)}/#{(max / 10.0)}"
     end
   end
 
