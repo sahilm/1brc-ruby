@@ -3,7 +3,10 @@
     "allow": [
       "Bash(bundle exec rspec:*)",
       "Bash(ls:*)",
-      "Bash(ln:*)"
+      "Bash(ln:*)",
+      "Bash(wc:*)",
+      "Bash(ruby --version:*)",
+      "Bash(bundle exec rubocop:*)"
     ]
   }
 }

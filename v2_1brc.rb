@@ -2,22 +2,15 @@
 RubyVM::YJIT.enable
 
 require "etc"
-require "bigdecimal"
 
 module V2
   Stats = Struct.new(:min, :max, :sum, :count) do
-    def add_measurement(value)
-      self.min = value if value < min
-      self.max = value if value > max
-      self.sum += value
-      self.count += 1
-    end
-
-    def merge(other)
-      Stats.new(min: [self.min, other.min].min,
-                max: [self.max, other.max].max,
-                sum: self.sum + other.sum,
-                count: self.count + other.count)
+    def merge!(other)
+      self.min = other.min if other.min < self.min
+      self.max = other.max if other.max > self.max
+      self.sum += other.sum
+      self.count += other.count
+      self
     end
 
     def to_s
@@ -45,7 +38,7 @@ module V2
 
         pid = fork do
           reader.close
-          stations = Hash.new
+          stations = Hash.new(capacity: 500) { |h, k| h[k] = Stats.new(min: 999, max: -999, sum: 0, count: 0) }
 
           File.open(file, "r:UTF-8") do |f|
             f.seek(start_offset, IO::SEEK_SET)
@@ -55,18 +48,26 @@ module V2
             pos += f.gets.bytesize unless start_offset.zero?
 
             f.each_line do |line|
-              original_size = line.bytesize
-              name = line.slice!(0, line.index(";"))
-              value = to_number(line[1..])
+              # Find semicolon using byte scanning
+              semi_pos = 0
+              while line.getbyte(semi_pos) != 59 # ';'
+                semi_pos += 1
+              end
+              name = line.byteslice(0, semi_pos)
+              value = to_number_fast(line, semi_pos + 1)
 
-              stations[name] ||= Stats.new(min: 999, max: -999, sum: 0, count: 0)
-              stations[name].add_measurement(value)
+              stat = stations[name]
+              stat.min = value if value < stat.min
+              stat.max = value if value > stat.max
+              stat.sum += value
+              stat.count += 1
 
-              pos += original_size
+              pos += line.bytesize
               break if pos > end_offset
             end
           end
 
+          stations.default_proc = nil
           writer.write Marshal.dump(stations)
           writer.close
           exit!
@@ -76,13 +77,16 @@ module V2
         pids << pid
       end
 
-      all_stations = pipes.map do |r|
-        Marshal.load(r.read)
-      ensure
+      all_stations = {}
+      pipes.each do |r|
+        worker_stations = Marshal.load(r.read)
         r.close
-      end.reduce({}) do |acc, station|
-        acc.merge(station) do |_, s1, s2|
-          s1.merge(s2)
+        worker_stations.each do |name, stats|
+          if all_stations.key?(name)
+            all_stations[name].merge!(stats)
+          else
+            all_stations[name] = stats
+          end
         end
       end
 
@@ -92,14 +96,19 @@ module V2
         end.join(', ')}}"
     end
 
-    def self.to_number(number_string)
-      is_negative = number_string.start_with?("-")
-      if is_negative
-        number_string.slice!(0)
-      end
-      number = (number_string.slice!(0..number_string.index(".")).to_i * 10) + number_string.to_i
+    def self.to_number_fast(str, start_idx)
+      idx = start_idx
+      negative = str.getbyte(idx) == 45 # '-'
+      idx += 1 if negative
 
-      is_negative ? -number : number
+      result = 0
+      while (b = str.getbyte(idx)) != 46 # '.'
+        result = result * 10 + (b - 48) # '0' = 48
+        idx += 1
+      end
+      result = result * 10 + (str.getbyte(idx + 1) - 48)
+
+      negative ? -result : result
     end
   end
 
