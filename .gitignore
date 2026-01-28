@@ -2,3 +2,4 @@ measurements-1b.txt
 tmp/*
 measurements.txt
 spec/expected-output.txt
+.bundle/
