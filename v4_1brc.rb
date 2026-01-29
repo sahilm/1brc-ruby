@@ -11,7 +11,6 @@ module V4
     chunk_size = file.size / num_workers
     pipes = []
     pids = []
-    semicolon_byte_value = ";".bytes.first
 
     (0..num_workers - 1).map do |i|
       start_offset = i * chunk_size
@@ -34,7 +33,7 @@ module V4
           pos += f.gets.bytesize unless start_offset.zero?
 
           f.each_line do |line|
-            separator_pos = find_separator_position(line, semicolon_byte_value)
+            separator_pos = line.byteindex(';')
             station_name = line.byteslice(0, separator_pos)
             temperature = parse(line, separator_pos + 1)
 
@@ -94,13 +93,5 @@ module V4
     result = result * 10 + (raw_temperature_reading.getbyte(idx + 1) - 48)
 
     negative ? -result : result
-  end
-
-  def self.find_separator_position(line, separator_byte)
-    pos = 0
-    while line.getbyte(pos) != separator_byte
-      pos += 1
-    end
-    pos
   end
 end
