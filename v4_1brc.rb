@@ -10,7 +10,6 @@ module V4
     num_workers = Etc.nprocessors
     chunk_size = file.size / num_workers
     pipes = []
-    pids = []
 
     (0..num_workers - 1).map do |i|
       start_offset = i * chunk_size
@@ -18,11 +17,9 @@ module V4
       [start_offset, end_offset]
     end.each do |start_offset, end_offset|
       reader, writer = IO.pipe
-      reader.binmode
-      writer.binmode
       pipes << reader
 
-      pid = fork do
+      fork do
         reader.close
         station_stats = Hash.new { |h, k| h[k] = [999, -999, 0, 0] }
 
@@ -51,11 +48,8 @@ module V4
         station_stats.default_proc = nil
         writer.write Marshal.dump(station_stats)
         writer.close
-        exit!
       end
-
       writer.close
-      pids << pid
     end
 
     all_stations = Hash.new { |h, k| h[k] = [999, -999, 0, 0] }
@@ -71,7 +65,7 @@ module V4
       end
     end
 
-    pids.each { |pid| Process.wait(pid) }
+    Process.waitall
 
     "{#{
       all_stations.sort.map do |station_name, stats|
