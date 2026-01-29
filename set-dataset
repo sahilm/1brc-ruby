@@ -1,0 +1,44 @@
+#!/bin/bash
+
+set -e
+
+usage() {
+  echo "Usage: $0 <size>"
+  echo "  size: 10k, 1m, 10m, or 1b"
+  exit 1
+}
+
+if [ $# -ne 1 ]; then
+  usage
+fi
+
+size="$1"
+
+case "$size" in
+  10k|1m|10m|1b)
+    ;;
+  *)
+    echo "Error: Invalid size '$size'"
+    usage
+    ;;
+esac
+
+measurements_file="measurements-${size}.txt"
+expected_file="spec/expected-output-${size}.txt"
+
+if [ ! -f "$measurements_file" ]; then
+  echo "Error: $measurements_file not found"
+  exit 1
+fi
+
+if [ ! -f "$expected_file" ]; then
+  echo "Error: $expected_file not found"
+  exit 1
+fi
+
+ln -sf "$measurements_file" measurements.txt
+ln -sf "expected-output-${size}.txt" spec/expected-output.txt
+
+echo "Set dataset to $size"
+echo "  measurements.txt -> $measurements_file"
+echo "  spec/expected-output.txt -> expected-output-${size}.txt"
