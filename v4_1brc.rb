@@ -52,7 +52,10 @@ module V4
       writer.close
     end
 
+    Process.waitall
+
     all_stations = Hash.new { |h, k| h[k] = [999, -999, 0, 0] }
+
     pipes.each do |r|
       worker_stations = Marshal.load(r.read)
       r.close
@@ -64,8 +67,6 @@ module V4
         current[3] += stats[3]
       end
     end
-
-    Process.waitall
 
     "{#{
       all_stations.sort.map do |station_name, stats|
