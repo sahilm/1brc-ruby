@@ -9,14 +9,12 @@ module V3
     end
 
     file = Pathname(__dir__).join("measurements.txt")
-    semicolon_byte_value = ";".bytes.first
-    
+
     File.open(file, "r:UTF-8") do |f|
       f.each_line do |line|
-        record_separator_position = find_separator_position(line, semicolon_byte_value)
-
-        station_name = line.byteslice(0, record_separator_position)
-        temperature_reading = parse(line, record_separator_position + 1)
+        seperator_pos = line.byteindex(";")
+        station_name = line.byteslice(0, seperator_pos)
+        temperature_reading = parse(line, seperator_pos + 1)
 
         current_stats = station_temperate_stats[station_name]
         current_stats[0] = temperature_reading if temperature_reading < current_stats[0]
@@ -46,15 +44,5 @@ module V3
     result = result * 10 + (raw_temperate_reading.getbyte(idx + 1) - 48)
 
     negative ? -result : result
-  end
-
-  private
-
-  def self.find_separator_position(line, separator_byte)
-    seperator_pos = 0
-    while line.getbyte(seperator_pos) != separator_byte
-      seperator_pos += 1
-    end
-    seperator_pos
   end
 end
