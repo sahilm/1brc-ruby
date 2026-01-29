@@ -3,3 +3,4 @@ tmp/*
 measurements.txt
 spec/expected-output.txt
 .bundle/
+.claude/settings.local.json
