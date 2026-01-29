@@ -2,6 +2,6 @@
 # frozen_string_literal: true
 
 require "bundler/setup"
-require_relative "./v2_1brc"
+require_relative "./v3_1brc"
 
-puts V2::OneBRC.compute
+puts V3::compute
