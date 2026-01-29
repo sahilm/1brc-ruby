@@ -12,7 +12,7 @@ module V3
     semicolon_byte_value = ";".bytes.first
     
     File.open(file, "r:UTF-8") do |f|
-      f.each_line.with_index do |line, idx|
+      f.each_line do |line|
         record_separator_position = find_separator_position(line, semicolon_byte_value)
 
         station_name = line.byteslice(0, record_separator_position)
